@@ -105,8 +105,11 @@ class Match(object):
             return r.json()
 
     def get_json_from_file(self, file):
+
             with open(file, "r") as f:
-                return eval(f.read())
+                j = json.loads(f.read())
+                return j
+
 
     def get_html(self):
         r = requests.get(self.match_url)
