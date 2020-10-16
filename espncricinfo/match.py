@@ -5,81 +5,88 @@ from espncricinfo.exceptions import MatchNotFoundError, NoScorecardError
 
 class Match(object):
 
-    def __init__(self, match_id):
+    def __init__(self, match_id, file_path = None):
         self.match_id = match_id
         self.match_url = "https://www.espncricinfo.com/matches/engine/match/{0}.html".format(str(match_id))
         self.json_url = "https://www.espncricinfo.com/matches/engine/match/{0}.json".format(str(match_id))
-        self.json = self.get_json()
-        self.html = self.get_html()
+
+        if file_path:
+            self.json = self.get_json_from_file(f"{file_path}/{self.match_id}.json")
+            self.html = self.get_html_from_file(f"{file_path}/{self.match_id}.html")
+        else:
+            self.json = self.get_json()
+            self.html = self.get_html()
+            # thisis just a sub tree of the json objet I think
         self.comms_json = self.get_comms_json()
-        if self.json:
-            self.__unicode__ = self._description()
-            self.status = self._status()
-            self.match_class = self._match_class()
-            self.season = self._season()
-            self.description = self._description()
-            self.legacy_scorecard_url = self._legacy_scorecard_url()
-            self.series = self._series()
-            self.series_name = self._series_name()
-            self.series_id = self._series_id()
-            self.event_url = "https://core.espnuk.org/v2/sports/cricket/leagues/{0}/events/{1}".format(str(self.series_id), str(match_id))
-            self.details_url = self._details_url()
-            self.officials = self._officials()
-            self.current_summary = self._current_summary()
-            self.present_datetime_local = self._present_datetime_local()
-            self.present_datetime_gmt = self._present_datetime_gmt()
-            self.start_datetime_local = self._start_datetime_local()
-            self.start_datetime_gmt = self._start_datetime_gmt()
-            self.cancelled_match = self._cancelled_match()
-            self.rain_rule = self._rain_rule()
-            self.date = self._date()
-            self.continent = self._continent()
-            self.town_area = self._town_area()
-            self.town_name = self._town_name()
-            self.town_id = self._town_id()
-            self.weather_location_code = self._weather_location_code()
-            self.match_title = self._match_title()
-            self.result = self._result()
-            self.ground_id = self._ground_id()
-            self.ground_name = self._ground_name()
-            self.lighting = self._lighting()
-            self.followon = self._followon()
-            self.scheduled_overs = self._scheduled_overs()
-            self.innings_list = self._innings_list()
-            self.innings = self._innings()
-            self.latest_batting = self._latest_batting()
-            self.latest_bowling = self._latest_bowling()
-            self.latest_innings = self._latest_innings()
-            self.latest_innings_fow = self._latest_innings_fow()
-            self.team_1 = self._team_1()
-            self.team_1_id = self._team_1_id()
-            self.team_1_abbreviation = self._team_1_abbreviation()
-            self.team_1_players = self._team_1_players()
-            self.team_1_innings = self._team_1_innings()
-            self.team_1_run_rate = self._team_1_run_rate()
-            self.team_1_overs_batted = self._team_1_overs_batted()
-            self.team_1_batting_result = self._team_1_batting_result()
-            self.team_2 = self._team_2()
-            self.team_2_id = self._team_2_id()
-            self.team_2_abbreviation = self._team_2_abbreviation()
-            self.team_2_players = self._team_2_players()
-            self.team_2_innings = self._team_2_innings()
-            self.team_2_run_rate = self._team_2_run_rate()
-            self.team_2_overs_batted = self._team_2_overs_batted()
-            self.team_2_batting_result = self._team_2_batting_result()
-            self.home_team = self._home_team()
-            self.batting_first = self._batting_first()
-            self.match_winner = self._match_winner()
-            self.toss_winner = self._toss_winner()
-            self.toss_decision = self._toss_decision()
-            self.toss_decision_name = self._toss_decision_name()
-            self.toss_choice_team_id = self._toss_choice_team_id()
-            self.toss_winner_team_id = self._toss_winner_team_id()
-            self.espn_api_url = self._espn_api_url()
-            # from comms_json
-            self.rosters = self._rosters()
-            self.all_innings = self._all_innings()
-            self.close_of_play = self._close_of_play()
+        
+        # if self.json:
+        #     self.__unicode__ = self._description()
+        #     self.status = self._status()
+        #     self.match_class = self._match_class()
+        #     self.season = self._season()
+        #     self.description = self._description()
+        #     self.legacy_scorecard_url = self._legacy_scorecard_url()
+        #     self.series = self._series()
+        #     self.series_name = self._series_name()
+        #     self.series_id = self._series_id()
+        #     self.event_url = "https://core.espnuk.org/v2/sports/cricket/leagues/{0}/events/{1}".format(str(self.series_id), str(match_id))
+        #     self.details_url = self._details_url()
+        #     self.officials = self._officials()
+        #     self.current_summary = self._current_summary()
+        #     self.present_datetime_local = self._present_datetime_local()
+        #     self.present_datetime_gmt = self._present_datetime_gmt()
+        #     self.start_datetime_local = self._start_datetime_local()
+        #     self.start_datetime_gmt = self._start_datetime_gmt()
+        #     self.cancelled_match = self._cancelled_match()
+        #     self.rain_rule = self._rain_rule()
+        #     self.date = self._date()
+        #     self.continent = self._continent()
+        #     self.town_area = self._town_area()
+        #     self.town_name = self._town_name()
+        #     self.town_id = self._town_id()
+        #     self.weather_location_code = self._weather_location_code()
+        #     self.match_title = self._match_title()
+        #     self.result = self._result()
+        #     self.ground_id = self._ground_id()
+        #     self.ground_name = self._ground_name()
+        #     self.lighting = self._lighting()
+        #     self.followon = self._followon()
+        #     self.scheduled_overs = self._scheduled_overs()
+        #     self.innings_list = self._innings_list()
+        #     self.innings = self._innings()
+        #     self.latest_batting = self._latest_batting()
+        #     self.latest_bowling = self._latest_bowling()
+        #     self.latest_innings = self._latest_innings()
+        #     self.latest_innings_fow = self._latest_innings_fow()
+        #     self.team_1 = self._team_1()
+        #     self.team_1_id = self._team_1_id()
+        #     self.team_1_abbreviation = self._team_1_abbreviation()
+        #     self.team_1_players = self._team_1_players()
+        #     self.team_1_innings = self._team_1_innings()
+        #     self.team_1_run_rate = self._team_1_run_rate()
+        #     self.team_1_overs_batted = self._team_1_overs_batted()
+        #     self.team_1_batting_result = self._team_1_batting_result()
+        #     self.team_2 = self._team_2()
+        #     self.team_2_id = self._team_2_id()
+        #     self.team_2_abbreviation = self._team_2_abbreviation()
+        #     self.team_2_players = self._team_2_players()
+        #     self.team_2_innings = self._team_2_innings()
+        #     self.team_2_run_rate = self._team_2_run_rate()
+        #     self.team_2_overs_batted = self._team_2_overs_batted()
+        #     self.team_2_batting_result = self._team_2_batting_result()
+        #     self.home_team = self._home_team()
+        #     self.batting_first = self._batting_first()
+        #     self.match_winner = self._match_winner()
+        #     self.toss_winner = self._toss_winner()
+        #     self.toss_decision = self._toss_decision()
+        #     self.toss_decision_name = self._toss_decision_name()
+        #     self.toss_choice_team_id = self._toss_choice_team_id()
+        #     self.toss_winner_team_id = self._toss_winner_team_id()
+        #     self.espn_api_url = self._espn_api_url()
+        #     # from comms_json
+        #     self.rosters = self._rosters()
+        #     self.all_innings = self._all_innings()
+        #     self.close_of_play = self._close_of_play()
 
 
     def __str__(self):
@@ -97,12 +104,25 @@ class Match(object):
         else:
             return r.json()
 
+    def get_json_from_file(self, file):
+            with open(file, "r") as f:
+                return eval(f.read())
+
     def get_html(self):
         r = requests.get(self.match_url)
         if r.status_code == 404:
             raise MatchNotFoundError
         else:
             return BeautifulSoup(r.text, 'html.parser')
+
+    def get_html_from_file(self, file):
+            with open(file, "r") as f:
+                return BeautifulSoup(f.read(), 'html.parser')
+
+
+
+
+
 
     def match_json(self):
         return self.json['match']
