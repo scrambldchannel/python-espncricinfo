@@ -7,39 +7,43 @@ from espncricinfo.match import Match
 class Player(object):
 
     def __init__(self, player_id):
-        self.url = "https://www.espncricinfo.com/ci/content/player/{0}.html".format(str(player_id))
-        self.json_url = "https://core.espnuk.org/v2/sports/cricket/athletes/{0}".format(str(player_id))
+        self.url = f"https://www.espncricinfo.com/ci/content/player/{player_id}.html"
+        self.json_url = f"https://core.espnuk.org/v2/sports/cricket/athletes/{player_id}"
+
+
         self.parsed_html = self.get_html()
         self.json = self.get_json()
+
         self.player_information = self._parse_player_information()
         self.cricinfo_id = str(player_id)
-        if self.parsed_html:
-            self.__unicode__ = self._full_name()
-            self.name = self._name()
-            self.first_name = self._first_name()
-            self.full_name = self._full_name()
-            self.date_of_birth = self._date_of_birth()
-            self.current_age = self._current_age()
-            self.major_teams = self._major_teams()
-            self.nickname = self._nickname()
-            self.playing_role = self._playing_role()
-            self.batting_style = self._batting_style()
-            self.bowling_style = self._bowling_style()
-            self.batting_fielding_averages = self._batting_fielding_averages()
-            self.bowling_averages = self._bowling_averages()
-            self.test_debut = self._test_debut()
-            self.last_test = self._last_test()
-            self.t20i_debut = self._t20i_debut()
-            self.last_t20i = self._last_t20i()
-            self.first_class_debut = self._first_class_debut()
-            self.last_first_class = self._last_first_class()
-            self.list_a_debut = self._list_a_debut()
-            self.last_list_a = self._last_list_a()
-            self.t20_debut = self._t20_debut()
-            self.last_t20 = self._last_t20()
-            self.odi_debut = self._odi_debut()
-            self.last_odi = self._last_odi()
-            self.recent_matches = self._recent_matches()
+
+        # if self.parsed_html:
+        #     self.__unicode__ = self._full_name()
+        #     self.name = self._name()
+        #     self.first_name = self._first_name()
+        #     self.full_name = self._full_name()
+        #     self.date_of_birth = self._date_of_birth()
+        #     self.current_age = self._current_age()
+        #     self.major_teams = self._major_teams()
+        #     self.nickname = self._nickname()
+        #     self.playing_role = self._playing_role()
+        #     self.batting_style = self._batting_style()
+        #     self.bowling_style = self._bowling_style()
+        #     self.batting_fielding_averages = self._batting_fielding_averages()
+        #     self.bowling_averages = self._bowling_averages()
+        #     self.test_debut = self._test_debut()
+        #     self.last_test = self._last_test()
+        #     self.t20i_debut = self._t20i_debut()
+        #     self.last_t20i = self._last_t20i()
+        #     self.first_class_debut = self._first_class_debut()
+        #     self.last_first_class = self._last_first_class()
+        #     self.list_a_debut = self._list_a_debut()
+        #     self.last_list_a = self._last_list_a()
+        #     self.t20_debut = self._t20_debut()
+        #     self.last_t20 = self._last_t20()
+        #     self.odi_debut = self._odi_debut()
+        #     self.last_odi = self._last_odi()
+        #     self.recent_matches = self._recent_matches()
 
     def get_html(self):
         r = requests.get(self.url)
