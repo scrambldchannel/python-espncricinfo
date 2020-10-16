@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import dateparser
 from espncricinfo.exceptions import PlayerNotFoundError
 from espncricinfo.match import Match
 
