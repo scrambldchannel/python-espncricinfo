@@ -1,3 +1,4 @@
 [flake8]
-ignore = E230
+# E722 and W503 to be reviewed
+ignore = E230, E722, W503
 max-line-length = 120

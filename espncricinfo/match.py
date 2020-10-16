@@ -1,16 +1,23 @@
 import json
+from typing import Optional
+
 import requests
 from bs4 import BeautifulSoup
+
 from espncricinfo.exceptions import MatchNotFoundError, NoScorecardError
-from typing import Optional
+
 
 class Match(object):
 
     # fairly cludgy way to handle loading from a file, should probably accept filenames instead
     def __init__(self, match_id: int, file_path: Optional[str] = None) -> None:
         self.match_id = match_id
-        self.match_url = f"https://www.espncricinfo.com/matches/engine/match/{match_id}.html"
-        self.json_url = f"https://www.espncricinfo.com/matches/engine/match/{match_id}.json"
+        self.match_url = (
+            f"https://www.espncricinfo.com/matches/engine/match/{match_id}.html"
+        )
+        self.json_url = (
+            f"https://www.espncricinfo.com/matches/engine/match/{match_id}.json"
+        )
 
         if file_path:
             self.json = self.get_json_from_file(f"{file_path}/{self.match_id}.json")
@@ -20,7 +27,7 @@ class Match(object):
             self.html = self.get_html()
             # thisis just a sub tree of the json objet I think
         self.comms_json = self.get_comms_json()
-        
+
         if self.json:
             # leaving this here for now as they seem to all work for the matches I'm interested in
             # review this pattern in future though and create something more lightweight
@@ -31,7 +38,9 @@ class Match(object):
             self.legacy_scorecard_url = self._legacy_scorecard_url()
             self.series = self._series()
             self.series_id = self._series_id()
-            self.event_url = "https://core.espnuk.org/v2/sports/cricket/leagues/{0}/events/{1}".format(str(self.series_id), str(match_id))
+            self.event_url = "https://core.espnuk.org/v2/sports/cricket/leagues/{0}/events/{1}".format(
+                str(self.series_id), str(match_id)
+            )
             self.details_url = self._details_url()
             self.date = self._date()
             self.match_title = self._match_title()
@@ -61,144 +70,153 @@ class Match(object):
         r = requests.get(self.json_url)
         if r.status_code == 404:
             raise MatchNotFoundError
-        elif 'Scorecard not yet available' in r.text:
+        elif "Scorecard not yet available" in r.text:
             raise NoScorecardError
         else:
             return r.json()
 
     def get_json_from_file(self, file):
 
-            with open(file, "r") as f:
-                j = json.loads(f.read())
-                return j
-
+        with open(file, "r") as f:
+            j = json.loads(f.read())
+            return j
 
     def get_html(self) -> BeautifulSoup:
         r = requests.get(self.match_url)
         if r.status_code == 404:
             raise MatchNotFoundError
         else:
-            return BeautifulSoup(r.text, 'html.parser')
+            return BeautifulSoup(r.text, "html.parser")
 
     def get_html_from_file(self, file: str) -> BeautifulSoup:
-            with open(file, "r") as f:
-                return BeautifulSoup(f.read(), 'html.parser')
-
+        with open(file, "r") as f:
+            return BeautifulSoup(f.read(), "html.parser")
 
     def match_json(self) -> dict:
-        return self.json['match']
+        return self.json["match"]
 
     def get_comms_json(self) -> Optional[dict]:
         try:
-            text = self.html.find_all('script')[15].string
+            text = self.html.find_all("script")[15].string
             return json.loads(text)
         except:
             return None
 
     def _espn_api_url(self) -> str:
-        # what is this? Move to constructor if useful 
+        # what is this? Move to constructor if useful
         return f"https://site.api.espn.com/apis/site/v2/sports/cricket/{self.series_id}/summary?event={self.match_id}"
 
     # as above
     def _legacy_scorecard_url(self) -> str:
-        return "https://static.espncricinfo.com"+self.match_json()['legacy_url']
+        return "https://static.espncricinfo.com" + self.match_json()["legacy_url"]
 
     # as above
     def _details_url(self, page=1, number=1000):
-        return self.event_url+"/competitions/{match_id}/details?page_size={number}&page={page}"
+        return (
+            self.event_url
+            + f"/competitions/{self.match_id}/details?page_size={number}&page={page}"
+        )
 
     def _season(self):
-        return self.match_json()['season']
+        return self.match_json()["season"]
 
     def _description(self):
-        return self.json['description']
+        return self.json["description"]
 
     def _series(self):
-        return self.json['series']
+        return self.json["series"]
 
     def _series_id(self):
-        return self.json['series'][-1]['core_recreation_id']
+        return self.json["series"][-1]["core_recreation_id"]
 
     def _date(self):
-        return self.match_json()['start_date_raw']
+        return self.match_json()["start_date_raw"]
 
     def _match_title(self):
-        return self.match_json()['cms_match_title']
+        return self.match_json()["cms_match_title"]
 
     def _result(self):
-        return self.json['live']['status']
+        return self.json["live"]["status"]
 
     def _ground_id(self):
-        return self.match_json()['ground_id']
+        return self.match_json()["ground_id"]
 
     def _ground_name(self):
-        return self.match_json()['ground_name']
+        return self.match_json()["ground_name"]
 
     def _scheduled_overs(self):
         try:
-            return int(self.match_json()['scheduled_overs'])
+            return int(self.match_json()["scheduled_overs"])
         except:
             return None
 
     def _innings_list(self):
         try:
-            return self.json['centre']['common']['innings_list']
+            return self.json["centre"]["common"]["innings_list"]
         except:
             return None
 
     def _innings(self):
-        return self.json['innings']
+        return self.json["innings"]
 
     def _team_1(self):
-        return self.json['team'][0]
+        return self.json["team"][0]
 
     def _team_1_id(self):
-        return self._team_1()['team_id']
+        return self._team_1()["team_id"]
 
     def _team_1_abbreviation(self):
-        return self._team_1()['team_abbreviation']
+        return self._team_1()["team_abbreviation"]
 
     def _team_1_players(self):
-        return self._team_1().get('player', [])
+        return self._team_1().get("player", [])
 
     def _team_1_innings(self):
         try:
-            return [inn for inn in self.json['innings'] if inn['batting_team_id'] == self._team_1_id()][0]
+            return [
+                inn
+                for inn in self.json["innings"]
+                if inn["batting_team_id"] == self._team_1_id()
+            ][0]
         except:
             return None
 
     def _team_2(self):
-        return self.json['team'][1]
+        return self.json["team"][1]
 
     def _team_2_id(self):
-        return self._team_2()['team_id']
+        return self._team_2()["team_id"]
 
     def _team_2_abbreviation(self):
-        return self._team_2()['team_abbreviation']
+        return self._team_2()["team_abbreviation"]
 
     def _team_2_players(self):
-        return self._team_2().get('player', [])
+        return self._team_2().get("player", [])
 
     def _team_2_innings(self):
         try:
-            return [inn for inn in self.json['innings'] if inn['batting_team_id'] == self._team_2_id()][0]
+            return [
+                inn
+                for inn in self.json["innings"]
+                if inn["batting_team_id"] == self._team_2_id()
+            ][0]
         except:
             return None
 
     def _home_team(self):
-        if self._team_1_id() == self.match_json()['home_team_id']:
+        if self._team_1_id() == self.match_json()["home_team_id"]:
             return self._team_1_abbreviation()
         else:
             return self._team_2_abbreviation()
 
     def _batting_first(self):
-        if self._team_1_id() == self.match_json()['batting_first_team_id']:
+        if self._team_1_id() == self.match_json()["batting_first_team_id"]:
             return self._team_1_abbreviation()
         else:
             return self._team_2_abbreviation()
 
     def _match_winner(self):
-        if self._team_1_id() == self.match_json()['winner_team_id']:
+        if self._team_1_id() == self.match_json()["winner_team_id"]:
             return self._team_1_abbreviation()
         else:
             return self._team_2_abbreviation()
@@ -207,49 +225,58 @@ class Match(object):
 
     def _rosters(self):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['teams']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["teams"]
         except:
             return None
 
     def _all_innings(self):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"]
         except:
             return None
 
     def _close_of_play(self):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['closePlay']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["closePlay"]
         except:
             return None
 
     def batsmen(self, innings):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings'][str(innings)]['batsmen']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"][
+                str(innings)
+            ]["batsmen"]
         except:
             return None
 
     def bowlers(self, innings):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings'][str(innings)]['bowlers']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"][
+                str(innings)
+            ]["bowlers"]
         except:
             return None
 
     def did_not_bat(self, innings):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings'][str(innings)]['didNotBat']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"][
+                str(innings)
+            ]["didNotBat"]
         except:
             return None
 
     def extras(self, innings):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings'][str(innings)]['extras']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"][
+                str(innings)
+            ]["extras"]
         except:
             return None
 
     def fows(self, innings):
         try:
-            return self.comms_json['props']['pageProps']['data']['content']['innings'][str(innings)]['fallOfWickets']
+            return self.comms_json["props"]["pageProps"]["data"]["content"]["innings"][
+                str(innings)
+            ]["fallOfWickets"]
         except:
             return None
-
