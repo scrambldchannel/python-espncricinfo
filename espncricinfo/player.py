@@ -20,7 +20,7 @@ class Player(object):
         #self.json = self.get_json()
 
         self.player_information = self._parse_player_information()
-        self.cricinfo_id = str(player_id)
+        self.cricinfo_id = player_id
 
         if self.parsed_html:
             self.batting_fielding_averages = self._batting_fielding_averages()
